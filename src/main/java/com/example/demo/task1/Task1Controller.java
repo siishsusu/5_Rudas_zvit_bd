@@ -31,6 +31,7 @@ public class Task1Controller implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
+        // Ініціалізація інтерфейсу та встановлення подій для елементів керування
         taskConditionLabel.setText("Загальна сума продажів за кожним касиром за обраний період часу в залежності від категорії товару.");
 
         idCol.setCellValueFactory(cellData -> cellData.getValue()[0] != null ? new SimpleStringProperty(cellData.getValue()[0].toString()) : null);
@@ -44,17 +45,20 @@ public class Task1Controller implements Initializable {
         startPick.setOnAction(event -> updateData());
         endPick.setOnAction(event -> updateData());
 
-        updateData();
+        updateData(); // Оновлення даних після завантаження інтерфейсу
     }
 
     private void updateData() {
+        // Отримання дат початку і кінця періоду з відповідних елементів управління
         LocalDate startDate = startPick.getValue();
         LocalDate endDate = endPick.getValue();
 
         if (startDate != null && endDate != null) {
             try {
+                // Встановлення з'єднання з базою даних
                 DatabaseConnection connection = new DatabaseConnection();
                 Connection connectDB = connection.getConnection();
+                // Підготовка SQL-запиту з параметрами для вибору необхідних даних
                 PreparedStatement statement = connectDB.prepareStatement("SELECT employee.id_employee, " +
                         "CONCAT(employee.empl_surname, ' ', employee.empl_name, ' ', employee.empl_patronymic) AS pib, " +
                         "category.category_name, " +
@@ -69,10 +73,13 @@ public class Task1Controller implements Initializable {
                         "GROUP BY employee.id_employee, category.category_name");
                 statement.setDate(1, Date.valueOf(startDate));
                 statement.setDate(2, Date.valueOf(endDate));
+                // Виконання запиту та отримання результатів
                 ResultSet task1_q = statement.executeQuery();
 
+                // Очищення таблиці перед додаванням нових даних
                 table.getItems().clear();
 
+                // Обробка результатів та додавання їх у таблицю
                 while (task1_q.next()) {
                     String id = task1_q.getString("id_employee");
                     String pib = task1_q.getString("pib");
@@ -82,6 +89,7 @@ public class Task1Controller implements Initializable {
                     table.getItems().add(row);
                 }
 
+                // Закриття з'єднання та інших ресурсів
                 task1_q.close();
                 statement.close();
             } catch (SQLException e) {

@@ -33,9 +33,11 @@ public class Task2Controller implements Initializable {
         catNameCol.setCellValueFactory(cellData -> cellData.getValue()[1] != null ? new SimpleStringProperty(cellData.getValue()[1].toString()) : null);
 
         try {
+            // Встановлення з'єднання з базою даних
             DatabaseConnection connection = new DatabaseConnection();
             Connection connectDB = connection.getConnection();
             Statement statement = connectDB.createStatement();
+            // Створення і виконання SQL-запиту
             ResultSet task2_q = statement.executeQuery("SELECT * " +
                     "FROM category " +
                     "WHERE category_number NOT IN ( " +
@@ -46,7 +48,10 @@ public class Task2Controller implements Initializable {
                     "NOT EXISTS (SELECT * FROM sale WHERE UPC " +
                     "IN ( SELECT UPC FROM store_product sp WHERE sp.id_product = p.id_product)))");
 
+            // Очищення таблиці перед додаванням нових даних
+            table.getItems().clear();
 
+            // Додавання результатів запиту до таблиці
             while (task2_q.next()) {
                 String id = task2_q.getString("category_number");
                 String name = task2_q.getString("category_name");
@@ -54,6 +59,7 @@ public class Task2Controller implements Initializable {
                 table.getItems().add(row);
             }
 
+            // Закриття з'єднання та інших ресурсів
             task2_q.close();
             statement.close();
         } catch (SQLException e) {
